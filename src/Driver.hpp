@@ -11,7 +11,7 @@ namespace modemdriver
     enum DriverInternalState{
         IDLE,
         PENDING_ACK_FOR_A_SEND_MESSAGE,
-        ACKED_RECEIVED_DATA}
+        ACKED_RECEIVED_DATA};
 
 
     class Driver : public iodrivers_base::Driver
@@ -25,7 +25,7 @@ namespace modemdriver
             bool last_send_sequenz_number;
             bool last_recv_sequenz_number;
             std::vector<uint8_t> last_packet;
-            DRIVER_INTERNAL_STATE state;
+            DriverInternalState state;
             base::Time last_send;
         public: 
             Driver();
