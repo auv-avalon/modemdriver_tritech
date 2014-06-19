@@ -1,43 +1,58 @@
 #include "Driver.hpp"
 #include <iostream>
+#include "ModemParser.hpp"
 #define BITRATE 40
-    using namespace modemdriver;
+using namespace modemdriver;
     Driver::Driver()
-        : iodrivers_base::Driver(500)
-    {
-        send_last_second = 0;
-        last_process = base::Time::now();
+: iodrivers_base::Driver(500), buffer_(100)
+{
+    send_last_second = 0;
+    last_process = base::Time::now();
 }
 
 void Driver::open(std::string const& uri){
     openURI(uri);
 }
+int Driver::getPacket(std::vector<uint8_t> &out_bytes){
+    uint8_t buffer[10];
+    if (hasPacket()){
+       int ret = readPacket(&buffer[0], 10, 1, -1); 
+       return Parser::extractPacket(&buffer[0], ret, out_bytes);
+    }
+    throw std::runtime_error("There is no Packet");
+    return 0;
+}
 
 int Driver::extractPacket(uint8_t const *buffer, size_t buffer_size) const
 {
+    int ret = 0;
+    std::vector<uint8_t> data;
+    if (buffer_size){
+        std::cout << "Debug ausgabe. Auf dem Modem kamen " << buffer_size << "bytes an" << std::endl;
+        ret = Parser::extractPacket(buffer, buffer_size, data);
+        if (ret == 0) {
+            std::cout << "There is something like a packet but it is not complete" << std::endl;
+        } else if ( ret < 0) {
+            std::cout << "There is some waste in the buffer. " << ret << "bytes are skipped" << std::endl;
+        } else {
+            std::cout << "There is a Packet in the buffer. The Data in buffer has the length " << buffer_size << std::endl;
+            std::cout << "The payload in the packet has the length "<< data.size() << std::endl;
+        }
+    }
     //return 0 zum warten
     //negativ zum skippen
     //positiv zum lesen
-    return buffer_size;
+    return ret;
 }
 void Driver::writeSlowly(uint8_t const *send_buffer, size_t buffer_size){
-    buffer.resize(buffer.size()+ buffer_size);
+    std::cout << "write somethind slowly" << std::endl;
+    //if (buffer_.full()){
+    //    buffer_.resize(buffer.size()+ 100); //ugly
+    //}
     for (int i=0; i < buffer_size; i++){
-        buffer.push_back(send_buffer[i]);
+        buffer_.push_back(send_buffer[i]);
     }
 }
-void Driver::writePacket_(uint8_t payload){
-    uint8_t first = 0x30;
-    uint8_t second = 0x0C;
-    first = first | (payload >> 4);
-    second = second | (payload << 4);
-    uint8_t buffer[2];
-    buffer[0] = first;
-    buffer[1] = second;
-    writeSlowly(buffer, 2);
-
-}
-
 
 size_t Driver::process(){
     if ((int) last_process.toSeconds() != (int) base::Time::now().toSeconds()){
@@ -46,17 +61,16 @@ size_t Driver::process(){
     }
     uint8_t send_buffer[BITRATE];
     size_t size = 0;
-    while (send_last_second < BITRATE && !buffer.empty()){
-        send_buffer[size++] = buffer[0];
-        std::cout << "SEND: " << buffer[0] << std::endl;
-        buffer.pop_front();
+    while (send_last_second < BITRATE && !buffer_.empty()){
+        send_buffer[size++] = buffer_[0];
+        std::cout << "SEND: " << buffer_[0] << std::endl;
+        buffer_.pop_front();
         send_last_second += 8;
     }
     if(size){
+        std::cout << "write Packet" << std::endl;
         writePacket(send_buffer, size);
     } 
-    return buffer.size();
+    return buffer_.size();
 }
 
-void Driver::writeModemMessage(ModemMessageHead head, std::vector<uint8_t> payload){
-}
