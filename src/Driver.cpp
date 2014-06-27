@@ -16,10 +16,11 @@ void Driver::open(std::string const& uri){
 int Driver::getPacket(std::vector<uint8_t> &out_bytes){
     uint8_t buffer[10];
     if (hasPacket()){
+        std::cout << "In the Driver there is a Packet a valid Packet from the Modem" << std::endl;
        int ret = readPacket(&buffer[0], 10, 1, -1); 
        return Parser::extractPacket(&buffer[0], ret, out_bytes);
     }
-    throw std::runtime_error("There is no Packet");
+    //throw std::runtime_error("There is no Packet");
     return 0;
 }
 
@@ -28,7 +29,7 @@ int Driver::extractPacket(uint8_t const *buffer, size_t buffer_size) const
     int ret = 0;
     std::vector<uint8_t> data;
     if (buffer_size){
-        std::cout << "Debug ausgabe. Auf dem Modem kamen " << buffer_size << "bytes an" << std::endl;
+        std::cout << "Debug Ausgabe: Auf dem Modem kamen " << buffer_size << "bytes an" << std::endl;
         ret = Parser::extractPacket(buffer, buffer_size, data);
         if (ret == 0) {
             std::cout << "There is something like a packet but it is not complete" << std::endl;

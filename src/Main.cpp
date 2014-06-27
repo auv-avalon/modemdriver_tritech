@@ -1,8 +1,8 @@
 #include <iostream>
 #include <sstream>
-#include <modemdriver/Driver.hpp>
-#include <modemdriver/ModemParser.hpp>
-#include <modemdriver/AckDriver.hpp>
+#include <modemdriver_tritech/Driver.hpp>
+#include <modemdriver_tritech/ModemParser.hpp>
+#include <modemdriver_tritech/AckDriver.hpp>
 #include <vector>
 #include <bitset>
 #include <boost/dynamic_bitset.hpp>
@@ -12,6 +12,8 @@ int main(int argc, char** argv)
 {
         boost::circular_buffer<uint8_t> buffer(1);
         std::cout << "Initial" << std::endl;
+        buffer.resize(10);
+        //buffer.clear();
         if (buffer.empty()){
             std::cout << "buffer leer" << std::endl;
         }

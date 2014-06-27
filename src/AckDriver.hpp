@@ -23,7 +23,7 @@ namespace modemdriver
         public:
             AckDriver();
             void setDriver(DriverInterface* driver);
-            void process();
+            size_t process();
             void writePacket(uint8_t payload);
             uint8_t getNextReceivedData();
             bool hasReceivedData();

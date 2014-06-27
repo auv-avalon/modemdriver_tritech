@@ -2,18 +2,16 @@
 #include "Driver.hpp"
 #include "ModemParser.hpp"
 using namespace modemdriver;
-AckDriver::AckDriver(){
+AckDriver::AckDriver()
+: payload_buffer(200), received_data(200) {
     state = INITIAL;
     send_retries = 0;
-    payload_buffer.resize(200);
-    received_data.resize(200);
 }
 void AckDriver::setDriver(DriverInterface* driver_){
     driver = driver_;
 }
 
 void AckDriver::writePacket(uint8_t payload){
-    payload_buffer.resize(200);
     if (payload & 0x80){
         throw std::runtime_error("too big payload. Payload have just 7 bits");
     }
@@ -35,10 +33,11 @@ uint8_t AckDriver::getNextReceivedData(){
 bool AckDriver::hasReceivedData(){
     return !received_data.empty();
 }
-void AckDriver::process(){
+size_t AckDriver::process(){
     std::vector<uint8_t> packet;
     int length = driver->getPacket(packet);
     if (length){
+        std::cout << "In the Ack Driver there is a valid Packet from the Modem" << std::endl;
         if ((bool) last_received_ack_bit != (bool) packet[0]&80) {
             state = RECEIVED_DATA;
             last_received_ack_bit = packet[0]&80;
@@ -97,6 +96,6 @@ void AckDriver::process(){
             send_retries = 0;
             break;
     }
-    //std::cout << "Current Wait" << current_wait << std::endl;
     driver->process();
+    return payload_buffer.size();
 } 
