@@ -1,6 +1,10 @@
 #include "AckDriver.hpp"
 #include "Driver.hpp"
 #include "ModemParser.hpp"
+//The Time between two send retries is calculated as
+//random from 0 to MAX_WAIT_PER_FACTOR*(send_retries%MAX_WAIT_FACTOR) in Ms
+#define MAX_WAIT_PER_FACTOR 200
+#define MAX_WAIT_FACTOR 20
 using namespace modemdriver;
 AckDriver::AckDriver()
 : payload_buffer(200), received_data(200) {
@@ -69,13 +73,13 @@ size_t AckDriver::process(){
                 driver->writeSlowly(&(pending_message[0]), pending_message.size());
                 last_retry = base::Time::now();
                 send_retries++;
-                current_wait = (std::rand()%(2000*send_retries));
+                current_wait = (std::rand()%(200*send_retries));
             } else {
                 if (base::Time::now().toMilliseconds() - last_retry.toMilliseconds() >= current_wait){ //TODO check send_buffersize
                     std::cout << "current wait abgelaufen" << std::endl;
                     driver->writeSlowly(&(pending_message[0]), pending_message.size());
                     send_retries++;
-                    current_wait = (std::rand()%(2000*send_retries));
+                    current_wait = (std::rand()%(MAX_WAIT_PER_FACTOR*(send_retries%MAX_WAIT_FACTOR)));
                     last_retry = base::Time::now();
                 }
             }
