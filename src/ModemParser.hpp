@@ -37,6 +37,8 @@ namespace modemdriver
             static int packData(std::vector<uint8_t> &data);
             static int packData(boost::dynamic_bitset<uint8_t> &bits);
 
+            static bool parseDistance(const uint8_t *buffer, const size_t len, double &distance);
+
     };
 }
 #endif
