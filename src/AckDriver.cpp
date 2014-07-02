@@ -102,4 +102,9 @@ size_t AckDriver::process(){
     }
     driver->process();
     return payload_buffer.size();
-} 
+}
+
+void AckDriver::requestRange() const{
+    assert(driver);
+    driver->requestRange();
+}
