@@ -10,32 +10,15 @@
 
 int main(int argc, char** argv)
 {
-        boost::circular_buffer<uint8_t> buffer(1);
+        boost::circular_buffer<uint8_t> buffer(10);
         std::cout << "Initial" << std::endl;
-        buffer.resize(10);
-        //buffer.clear();
-        if (buffer.empty()){
-            std::cout << "buffer leer" << std::endl;
-        }
-        if (buffer.full()){
-            std::cout << "buffer voll" << std::endl;
-        }
         buffer.push_back(0x01);
-        std::cout << "Etwas rein gepusht" << std::endl;
-        if (buffer.empty()){
-            std::cout << "buffer leer" << std::endl;
-        }
-        if (buffer.full()){
-            std::cout << "buffer voll" << std::endl;
-        }
-        buffer.pop_front();
-        std::cout << "Etwas raus genommen" << std::endl;
-        if (buffer.empty()){
-            std::cout << "buffer leer" << std::endl;
-        }
-        if (buffer.full()){
-            std::cout << "buffer voll" << std::endl;
-        }
+        buffer.push_back(0x07);
+        buffer.push_back(0x13);
+        std::vector<uint8_t> out;
+        modemdriver::Parser::extractPacket(&buffer[1], buffer.size(), out);
+        std::cout << "Da laeuft er rueber" << std::endl;
+
 
         
 	modemdriver::AckDriver ack_driver;
