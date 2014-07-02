@@ -42,11 +42,15 @@ size_t AckDriver::process(){
     int length = driver->getPacket(packet);
     if (length){
         std::cout << "In the Ack Driver there is a valid Packet from the Modem" << std::endl;
-        if ((bool) last_received_ack_bit != (bool) packet[0]&80) {
+        std::cout << "The data vector has the length" << packet.size() << std::endl;
+        std::cout << "The data on the first byte is: " << std::hex << (int)packet[0] << std::endl;
+        std::cout << "In the package the bit was:" << (bool)  (packet[0]&0x80) << std::endl; 
+        std::cout << "In the driver the bit was:" << (bool) last_received_ack_bit << std::endl;
+        if ((bool) last_received_ack_bit != (bool) (packet[0]&0x80)) {
             state = RECEIVED_DATA;
-            last_received_ack_bit = packet[0]&80;
-            uint8_t received_payload = packet[0]&0x7FF; 
-            if (length > 1) {
+            last_received_ack_bit = packet[0]&0x80;
+            uint8_t received_payload = packet[0]&0x7F; 
+            if (packet.size() > 1) {
                 throw std::runtime_error("Messages longer then one byte are not implemented yet!");
             } 
             if (received_payload){
