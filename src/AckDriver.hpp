@@ -8,7 +8,7 @@ namespace modemdriver
         PENDING_ACK,
         RECEIVED_DATA
     };
-    class AckDriver
+    class AckDriver 
     {
         private:
             DriverInterface* driver;
@@ -27,6 +27,7 @@ namespace modemdriver
             void writePacket(uint8_t payload);
             uint8_t getNextReceivedData();
             bool hasReceivedData();
+            void requestRange() const;
     };
 }
 #endif 

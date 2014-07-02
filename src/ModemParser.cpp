@@ -2,6 +2,9 @@
 #include <iostream>
 #include <iterator>
 #include <sstream>
+#include <string.h>
+#include <stdio.h>
+
 //Attention: If the flags are conflicting you can reach a endless recursion 
 #define SYN_FLAG 0x30
 #define SYN_BIT_COUNT 4
@@ -265,4 +268,15 @@ int Parser::packData(boost::dynamic_bitset<uint8_t> &bits){
     end_bits.resize(bits.size());
     end_bits <<= end_bits.size()-END_BIT_COUNT;
     bits |= syn_bits | end_bits;
+}
+
+bool Parser::parseDistance(const uint8_t *buffer, const size_t buffer_size, double &distance)
+{
+    char buff[buffer_size+1];
+    memcpy(buff,buffer,buffer_size);
+    buff[buffer_size] = 0;
+    if(sscanf(buff,"\r\n%fm\r\n",distance)){
+        return true;
+    }
+    return false;
 }

@@ -31,6 +31,13 @@ int Driver::extractPacket(uint8_t const *buffer, size_t buffer_size) const
     if (buffer_size){
         std::cout << "Debug Ausgabe: Auf dem Modem kamen " << buffer_size << "bytes an" << std::endl;
         ret = Parser::extractPacket(buffer, buffer_size, data);
+
+        double distance;
+        if(Parser::parseDistance(buffer, buffer_size,distance))
+        {
+            printf("got distance information: %f\n",distance);
+        }
+
         if (ret == 0) {
             std::cout << "There is something like a packet but it is not complete" << std::endl;
         } else if ( ret < 0) {
