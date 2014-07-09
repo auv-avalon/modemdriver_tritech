@@ -31,11 +31,14 @@ int Driver::extractPacket(uint8_t const *buffer, size_t buffer_size) const
     if (buffer_size){
         std::cout << "Debug Ausgabe: Auf dem Modem kamen " << buffer_size << "bytes an" << std::endl;
         ret = Parser::extractPacket(buffer, buffer_size, data);
-
+        for(int i=0;i<buffer_size;i++){
+            fprintf(stderr,"%c ", buffer[i]);
+        }
+        fprintf(stderr,"\n");
         double distance;
         if(Parser::parseDistance(buffer, buffer_size,distance))
         {
-            printf("got distance information: %f\n",distance);
+            fprintf(stderr,"got distance information: %f\n",distance);
         }
 
         if (ret == 0) {

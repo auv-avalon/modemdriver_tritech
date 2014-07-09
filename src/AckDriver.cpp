@@ -10,6 +10,8 @@ AckDriver::AckDriver()
 : payload_buffer(200), received_data(200) {
     state = INITIAL;
     send_retries = 0;
+    last_received_ack_bit = 0;
+
 }
 void AckDriver::setDriver(DriverInterface* driver_){
     driver = driver_;
@@ -19,11 +21,11 @@ void AckDriver::writePacket(uint8_t payload){
     if (payload & 0x80){
         throw std::runtime_error("too big payload. Payload have just 7 bits");
     }
-    //if (payload_buffer.full()){
-    //    throw std::runtime_error("Full Payloadbuffer");
-    //} else {
+    if (payload_buffer.full()){
+        throw std::runtime_error("Full Payloadbuffer");
+    } else {
         payload_buffer.push_back(payload);
-    //}
+    }
 }
 uint8_t AckDriver::getNextReceivedData(){
     if (!received_data.empty()){
@@ -51,7 +53,8 @@ size_t AckDriver::process(){
             last_received_ack_bit = packet[0]&0x80;
             uint8_t received_payload = packet[0]&0x7F; 
             if (packet.size() > 1) {
-                throw std::runtime_error("Messages longer then one byte are not implemented yet!");
+                std::cout << "Messeges longer then one byte are not implemented yet" << packet.size() << std::endl;
+                //throw std::runtime_error("Messages longer then one byte are not implemented yet!");
             } 
             if (received_payload){
                 received_data.push_back(received_payload);
@@ -60,7 +63,7 @@ size_t AckDriver::process(){
     }
     switch (state){
         case INITIAL:
-            std::cout << "State is Initial" << std::endl;
+            //std::cout << "State is Initial" << std::endl;
             //Wenn was im Payload buffer dann kommunikation beginnen
             //mit ack_bit 1
             if (!payload_buffer.empty()){ 

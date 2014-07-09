@@ -34,20 +34,20 @@ int Parser::extractPacket(const boost::dynamic_bitset<uint8_t> &bits, boost::dyn
     if (bits.size() == 0){
         throw std::runtime_error("You try to extract a Packet with a empty bitset");
     }
-    std::cout << "Starting extract Packt. The Data I try to extract:" << bits << std::endl;
+    //std::cout << "Starting extract Packt. The Data I try to extract:" << bits << std::endl;
     int found_start = searchByte(bits, SYN_FLAG, SYN_BIT_COUNT);
     if (found_start < 0){
-        std::cout << " ... abort. No Start-Flag in the while data" << std::endl;
+        //std::cout << " ... abort. No Start-Flag in the while data" << std::endl;
         //There is no start flag
         //The whole data is waste and is to be skipped
         return (bits.size()/8*-1);
     } else if (found_start > 7){
-        std::cout << "... abort. No Start-Flag in the first byte" << std::endl;
+        //std::cout << "... abort. No Start-Flag in the first byte" << std::endl;
         //The start flag is not found in the first byte
         //The bytes until the start-flag-byte is waste and to be skiped
         return (found_start/8*-1);
     }
-    std::cout << "! Found the Start-Flag at " << found_start << std::endl;
+    //std::cout << "! Found the Start-Flag at " << found_start << std::endl;
     //Start flag found in the first byte
     int found_end = searchByte(bits, END_FLAG, END_BIT_COUNT, found_start+SYN_BIT_COUNT);
     if (found_end < 0){
@@ -55,15 +55,15 @@ int Parser::extractPacket(const boost::dynamic_bitset<uint8_t> &bits, boost::dyn
         if (bits.size()-found_start > MAX_PACKET_BITS){
             //If there had to be an end because the packet is so too big
             //The whole data is waste and is to be skipped
-            std::cout << "... abort. No End-Flag was found. Skipping data" << std::endl;
+            //std::cout << "... abort. No End-Flag was found. Skipping data" << std::endl;
             return (bits.size()/8*-1);
         } else { 
-            std::cout << "... abort. No End-Flag was found. Waiting for more data ..." << std::endl;
+            //std::cout << "... abort. No End-Flag was found. Waiting for more data ..." << std::endl;
             //its could become a packet so we waitung for more data
             return 0;
         }
     }
-    std::cout << "! Found the End-Flag at " << found_end << std::endl;
+    //std::cout << "! Found the End-Flag at " << found_end << std::endl;
     /*if ((found_end-found_start+END_BIT_COUNT)%8 != 0){
         std::cout << "...abort. Data is not a byte format. We have " << (found_end-found_start+END_BIT_COUNT) << " data bytes." << std::endl;
         
@@ -83,16 +83,16 @@ int Parser::extractPacket(const boost::dynamic_bitset<uint8_t> &bits, boost::dyn
     deStuffBits(out, END_FLAG, SYN_BIT_COUNT);
 
     if (!checkParity(out)){
-        std::cout << "...abort. The parity check failed. This is the data:"<< out << std::endl;
+        //std::cout << "...abort. The parity check failed. This is the data:"<< out << std::endl;
         //The Parity is incorrect
         //Its can't be a correct Packet
         //The whole packet is waste and is to be skipped
         return ((found_end+END_BIT_COUNT)/8*-1);
     };
-    std::cout << "! Parity Check done" << std::endl;
+    //std::cout << "! Parity Check done" << std::endl;
     out.resize(out.size()-1);
     if (out.size()%8 != 0){
-        std::cout << "...abort. Its not a byte format" << std::endl;
+        //std::cout << "...abort. Its not a byte format" << std::endl;
         return ((found_end+END_BIT_COUNT)/8*-1);
     }
     std::cout << "Found a packet and extracted it" << std::endl;
@@ -152,6 +152,7 @@ int Parser::searchByte(const boost::dynamic_bitset<uint8_t> &bits, const boost::
         throw std::runtime_error("The data is smaller then the search pattern");
     }
     if (start_pos > bits.size()-1){
+        return -1;
         throw std::runtime_error("The starting point is not a index of the data");
     }
     for (int bit_nr=start_pos; bit_nr < bits.size()-search_bits.size()+1; bit_nr++){
@@ -261,6 +262,8 @@ int Parser::packData(std::vector<uint8_t> &data){
     boost::dynamic_bitset<uint8_t> bits;
     vectorToBitset(data, bits);
     packData(bits);
+
+    std::cout << "Gepackte Daten:" << bits << std::endl;
     bitsetToVector(bits, data);
 }
 int Parser::packData(boost::dynamic_bitset<uint8_t> &bits){
