@@ -16,6 +16,7 @@ namespace modemdriver
             uint8_t send_retries;
             std::vector<uint8_t> pending_message;
             uint8_t last_received_ack_bit;
+            uint8_t last_send_ack_bit;
             base::Time last_retry;
             boost::circular_buffer<uint8_t> payload_buffer;
             DriverInternalState state;

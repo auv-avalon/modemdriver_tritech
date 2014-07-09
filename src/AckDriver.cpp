@@ -11,6 +11,7 @@ AckDriver::AckDriver()
     state = INITIAL;
     send_retries = 0;
     last_received_ack_bit = 0;
+    last_send_ack_bit = 0;
 
 }
 void AckDriver::setDriver(DriverInterface* driver_){
@@ -68,6 +69,7 @@ size_t AckDriver::process(){
             if (!payload_buffer.empty()){ 
                 pending_message.resize(1);
                 pending_message[0] = (payload_buffer[0]|0x80); //set the ack_bit to initial 1
+                last_send_ack_bit = 1;
                 payload_buffer.pop_front();
                 Parser::packData(pending_message);
                 state = PENDING_ACK;
@@ -96,8 +98,11 @@ size_t AckDriver::process(){
                 payload = payload_buffer[0];
                 payload_buffer.pop_front();
             }
-            if (last_received_ack_bit){
+            if (!last_send_ack_bit){
                 payload = payload | 0x80;
+                last_send_ack_bit = 1;
+            } else {
+                last_send_ack_bit = 0;
             }
             pending_message[0] = payload;
             Parser::packData(pending_message);
