@@ -6,6 +6,7 @@
 #include "stddef.h"
 #include <vector>
 #include <boost/dynamic_bitset.hpp>
+#include <boost/circular_buffer.hpp>
 namespace modemdriver
 {
     class Parser
@@ -13,6 +14,7 @@ namespace modemdriver
         private:
             static uint8_t reverseByte(uint8_t b);
         public:
+            static int extractPacket(const boost::circular_buffer<uint8_t> &bytes, std::vector<uint8_t> &out_bytes);
             static int extractPacket(const uint8_t *buffer, size_t size, std::vector<uint8_t> &out_bytes);
             static int extractPacket(const std::vector<uint8_t> &bytes, std::vector<uint8_t> &out_bytes);
             static int extractPacket(const boost::dynamic_bitset<uint8_t> &bits, boost::dynamic_bitset<uint8_t> &out);

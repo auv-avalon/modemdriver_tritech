@@ -15,10 +15,12 @@ namespace modemdriver
             int extractPacket (uint8_t const *buffer, size_t buffer_size) const;
             base::Time last_process;
             boost::circular_buffer<uint8_t> buffer_;
+            boost::circular_buffer<uint8_t> receive_buffer;
             size_t send_last_second;
             bool last_send_sequenz_number;
             bool last_recv_sequenz_number;
             std::vector<uint8_t> last_packet;
+            std::vector<uint8_t> _internal_buffer_;
             base::Time last_send;
         public: 
             Driver();

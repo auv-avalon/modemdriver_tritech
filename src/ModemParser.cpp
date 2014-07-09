@@ -12,6 +12,13 @@
 #define END_BIT_COUNT 4
 #define MAX_PACKET_BITS 80
 using namespace modemdriver;
+int Parser::extractPacket(const boost::circular_buffer<uint8_t> &buffer, std::vector<uint8_t> &out_bytes){
+    std::vector<uint8_t> buffer_;
+    for (int i = 0; i < buffer.size(); i++){
+        buffer_.push_back(buffer[i]);
+    } 
+    return extractPacket(buffer_, out_bytes);
+}
 int Parser::extractPacket(const uint8_t *buffer, size_t size, std::vector<uint8_t> &out_bytes){
     if (size == 0){
         throw std::runtime_error("You try to extract a Packet with empty buffer");
@@ -152,8 +159,11 @@ int Parser::searchByte(const boost::dynamic_bitset<uint8_t> &bits, const boost::
         throw std::runtime_error("The data is smaller then the search pattern");
     }
     if (start_pos > bits.size()-1){
+        //TODO the method should not call with a unreachable start position this is a error
+        //throw std::runtime_error("The starting point is not a index of the data");
+        std::cout << "Warn: The driver searching for a pattern with a starting point bigger then data." << std::endl;
+        std::cout << "That is not a Problem, but you should take a Look on it." << std::endl;
         return -1;
-        throw std::runtime_error("The starting point is not a index of the data");
     }
     for (int bit_nr=start_pos; bit_nr < bits.size()-search_bits.size()+1; bit_nr++){
         bool found = true;
@@ -266,6 +276,7 @@ int Parser::packData(std::vector<uint8_t> &data){
     std::cout << "Gepackte Daten:" << bits << std::endl;
     bitsetToVector(bits, data);
 }
+
 int Parser::packData(boost::dynamic_bitset<uint8_t> &bits){
     if (bits.count()%2 != 0){
         bits.push_back(true);
