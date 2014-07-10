@@ -5,99 +5,104 @@
 #include <string.h>
 #include <stdio.h>
 
-//Attention: If the flags are conflicting you can reach a endless recursion 
+    //Attention: If the flags are conflicting you can reach a endless recursion 
 #define SYN_FLAG 0x30
 #define SYN_BIT_COUNT 4
 #define END_FLAG 0xC0
 #define END_BIT_COUNT 4
 #define MAX_PACKET_BITS 80
-using namespace modemdriver;
-int Parser::extractPacket(const boost::circular_buffer<uint8_t> &buffer, std::vector<uint8_t> &out_bytes){
-    std::vector<uint8_t> buffer_;
-    for (int i = 0; i < buffer.size(); i++){
-        buffer_.push_back(buffer[i]);
-    } 
-    return extractPacket(buffer_, out_bytes);
-}
-int Parser::extractPacket(const uint8_t *buffer, size_t size, std::vector<uint8_t> &out_bytes){
-    if (size == 0){
-        throw std::runtime_error("You try to extract a Packet with empty buffer");
+    using namespace modemdriver;
+    int Parser::extractPacket(const boost::circular_buffer<uint8_t> &buffer, std::vector<uint8_t> &out_bytes){
+        std::vector<uint8_t> buffer_;
+        for (int i = 0; i < buffer.size(); i++){
+            buffer_.push_back(buffer[i]);
+        } 
+        return extractPacket(buffer_, out_bytes);
     }
-    std::vector<uint8_t> bytes(&buffer[0], &buffer[size-1]);
-    return extractPacket(bytes, out_bytes);
-}
-int Parser::extractPacket(const std::vector<uint8_t> &bytes, std::vector<uint8_t> &out_bytes){
-    if (bytes.size() == 0){
-        throw std::runtime_error("You try to extract a Packet with a empty vector");
-    }
-    boost::dynamic_bitset<uint8_t> bits;
-    boost::dynamic_bitset<uint8_t> out_bits;
-    vectorToBitset(bytes, bits);
-    int ret =  extractPacket(bits, out_bits);
-    bitsetToVector(out_bits, out_bytes);
-    return ret;
-}
-int Parser::extractPacket(const boost::dynamic_bitset<uint8_t> &bits, boost::dynamic_bitset<uint8_t> &out){ 
-    if (bits.size() == 0){
-        throw std::runtime_error("You try to extract a Packet with a empty bitset");
-    }
-    //std::cout << "Starting extract Packt. The Data I try to extract:" << bits << std::endl;
-    int found_start = searchByte(bits, SYN_FLAG, SYN_BIT_COUNT);
-    if (found_start < 0){
-        //std::cout << " ... abort. No Start-Flag in the while data" << std::endl;
-        //There is no start flag
-        //The whole data is waste and is to be skipped
-        return (bits.size()/8*-1);
-    } else if (found_start > 7){
-        //std::cout << "... abort. No Start-Flag in the first byte" << std::endl;
-        //The start flag is not found in the first byte
-        //The bytes until the start-flag-byte is waste and to be skiped
-        return (found_start/8*-1);
-    }
-    //std::cout << "! Found the Start-Flag at " << found_start << std::endl;
-    //Start flag found in the first byte
-    int found_end = searchByte(bits, END_FLAG, END_BIT_COUNT, found_start+SYN_BIT_COUNT);
-    if (found_end < 0){
-        //No End was found
-        if (bits.size()-found_start > MAX_PACKET_BITS){
-            //If there had to be an end because the packet is so too big
-            //The whole data is waste and is to be skipped
-            //std::cout << "... abort. No End-Flag was found. Skipping data" << std::endl;
-            return (bits.size()/8*-1);
-        } else { 
-            //std::cout << "... abort. No End-Flag was found. Waiting for more data ..." << std::endl;
-            //its could become a packet so we waitung for more data
-            return 0;
+    int Parser::extractPacket(const uint8_t *buffer, size_t size, std::vector<uint8_t> &out_bytes){
+        if (size == 0){
+            throw std::runtime_error("You try to extract a Packet with empty buffer");
         }
+        std::vector<uint8_t> bytes(&buffer[0], &buffer[size-1]);
+        return extractPacket(bytes, out_bytes);
     }
-    //std::cout << "! Found the End-Flag at " << found_end << std::endl;
-    /*if ((found_end-found_start+END_BIT_COUNT)%8 != 0){
-        std::cout << "...abort. Data is not a byte format. We have " << (found_end-found_start+END_BIT_COUNT) << " data bytes." << std::endl;
-        
-        //Its can't be a packet just whole bytes can be send by sender
-        //The date until the detected end have to be waste and skipped
-        return ((found_end+END_BIT_COUNT)/8*-1);
-    }*/
-    //Possible end found
-    //Check the parity
-    out = boost::dynamic_bitset<uint8_t>(bits);
-    out >>= found_start+SYN_BIT_COUNT;
-    out.resize(found_end-found_start-SYN_BIT_COUNT);
-    //Destuffing
-    //std::cout << "! Destuff " << deStuffBits(out, 0x55, 8) << " Surface bits" << std::endl;
-    //std::cout << "! Destuff " << deStuffBits(out, 0xAA, 8) << " Surface bits" << std::endl;
-    deStuffBits(out, SYN_FLAG, SYN_BIT_COUNT);
-    deStuffBits(out, END_FLAG, SYN_BIT_COUNT);
+    int Parser::extractPacket(const std::vector<uint8_t> &bytes, std::vector<uint8_t> &out_bytes){
+        if (bytes.size() == 0){
+            throw std::runtime_error("You try to extract a Packet with a empty vector");
+        }
+        boost::dynamic_bitset<uint8_t> bits;
+        boost::dynamic_bitset<uint8_t> out_bits;
+        vectorToBitset(bytes, bits);
+        int ret =  extractPacket(bits, out_bits);
+        bitsetToVector(out_bits, out_bytes);
+        return ret;
+    }
+    int Parser::extractPacket(const boost::dynamic_bitset<uint8_t> &bits, boost::dynamic_bitset<uint8_t> &out){ 
+        if (bits.size() == 0){
+            throw std::runtime_error("You try to extract a Packet with a empty bitset");
+        }
+        //std::cout << "Starting extract Packt. The Data I try to extract:" << bits << std::endl;
+        int found_start = searchByte(bits, SYN_FLAG, SYN_BIT_COUNT);
+        if (found_start < 0){
+            //std::cout << " ... abort. No Start-Flag in the while data" << std::endl;
+            //There is no start flag
+            //The whole data is waste and is to be skipped
+            return (bits.size()/8*-1);
+        } else if (found_start > 7){
+            //std::cout << "... abort. No Start-Flag in the first byte" << std::endl;
+            //The start flag is not found in the first byte
+            //The bytes until the start-flag-byte is waste and to be skiped
+            return (found_start/8*-1);
+        }
+        //std::cout << "! Found the Start-Flag at " << found_start << std::endl;
+        //Start flag found in the first byte
+        int found_end = searchByte(bits, END_FLAG, END_BIT_COUNT, found_start+SYN_BIT_COUNT);
+        if (found_end < 0){
+            //No End was found
+            if (bits.size()-found_start > MAX_PACKET_BITS){
+                //If there had to be an end because the packet is so too big
+                //The whole data is waste and is to be skipped
+                //std::cout << "... abort. No End-Flag was found. Skipping data" << std::endl;
+                return (bits.size()/8*-1);
+            } else { 
+                //std::cout << "... abort. No End-Flag was found. Waiting for more data ..." << std::endl;
+                //its could become a packet so we waitung for more data
+                return 0;
+            }
+        }
+        //std::cout << "! Found the End-Flag at " << found_end << std::endl;
+        /*if ((found_end-found_start+END_BIT_COUNT)%8 != 0){
+            std::cout << "...abort. Data is not a byte format. We have " << (found_end-found_start+END_BIT_COUNT) << " data bytes." << std::endl;
+            
+            //Its can't be a packet just whole bytes can be send by sender
+            //The date until the detected end have to be waste and skipped
+            return ((found_end+END_BIT_COUNT)/8*-1);
+        }*/
+        //Possible end found
+        //Check the parity
+        out = boost::dynamic_bitset<uint8_t>(bits);
+        out >>= found_start+SYN_BIT_COUNT;
+        out.resize(found_end-found_start-SYN_BIT_COUNT);
+        //Destuffing
+        //std::cout << "! Destuff " << deStuffBits(out, 0x55, 8) << " Surface bits" << std::endl;
+        //std::cout << "! Destuff " << deStuffBits(out, 0xAA, 8) << " Surface bits" << std::endl;
+        deStuffBits(out, SYN_FLAG, SYN_BIT_COUNT);
+        deStuffBits(out, END_FLAG, SYN_BIT_COUNT);
 
-    if (!checkParity(out)){
-        //std::cout << "...abort. The parity check failed. This is the data:"<< out << std::endl;
-        //The Parity is incorrect
-        //Its can't be a correct Packet
-        //The whole packet is waste and is to be skipped
-        return ((found_end+END_BIT_COUNT)/8*-1);
-    };
-    //std::cout << "! Parity Check done" << std::endl;
-    out.resize(out.size()-1);
+        if (!checkParity(out)){
+            //std::cout << "...abort. The parity check failed. This is the data:"<< out << std::endl;
+            //The Parity is incorrect
+            //Its can't be a correct Packet
+            //The whole packet is waste and is to be skipped
+            return ((found_end+END_BIT_COUNT)/8*-1);
+        };
+        //std::cout << "! Parity Check done" << std::endl;
+        if (out.size() < 1){
+            std::cout << "HIIIIIIIIIIIIIEEEEERRRR HAETTE ES GEKNALLT" << std::endl;
+            return -1;
+        } else {
+            out.resize(out.size()-1);
+        }
     if (out.size()%8 != 0){
         //std::cout << "...abort. Its not a byte format" << std::endl;
         return ((found_end+END_BIT_COUNT)/8*-1);
