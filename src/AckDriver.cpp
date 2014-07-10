@@ -4,8 +4,8 @@
 #include "time.h"
 //The Time between two send retries is calculated as
 //random from 0 to MAX_WAIT_PER_FACTOR*(send_retries%MAX_WAIT_FACTOR) in Ms
-#define MAX_WAIT_PER_FACTOR 500
-#define MAX_WAIT_FACTOR 20
+#define MAX_WAIT_PER_FACTOR 300
+#define MAX_WAIT_FACTOR 10
 using namespace modemdriver;
 AckDriver::AckDriver()
 : payload_buffer(200), received_data(200) {

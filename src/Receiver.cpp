@@ -28,7 +28,7 @@ int main(int argc, char** argv)
         }
         if (count >= 1000){
             count = 0;
-            AckDriverStats s = ack_driver.getDriverStats();
+            modemdriver::AckDriverStats s = ack_driver.getDriverStats();
             std::cout << "Last send Ack Bit:" <<(int) s.last_send_ack_bit << std::endl; 
             std::cout << "Last receive Ack Bit:" <<(int) s.last_receive_ack_bit << std::endl; 
             std::cout << "Acked Data Packets:" <<(int) s.acked_data_packets << std::endl; 
