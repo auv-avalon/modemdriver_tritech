@@ -51,7 +51,7 @@ bool AckDriver::hasReceivedData(){
 size_t AckDriver::process(){
     std::vector<uint8_t> packet;
     int length = driver->getPacket(packet);
-    if (length){
+    if (length && packet.size()){
         std::cout << "valid Packet" << std::endl;
         //std::cout << "In the Ack Driver there is a valid Packet from the Modem" << std::endl;
         //std::cout << "The data vector has the length" << packet.size() << std::endl;

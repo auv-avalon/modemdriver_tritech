@@ -1,6 +1,6 @@
 rock_library(modemdriver_tritech
     SOURCES AckDriver.cpp Driver.cpp ModemParser.cpp DriverInterface.cpp
-    HEADERS AckDriver.hpp Driver.hpp ModemParser.hpp ModemDriverTypes.hpp DriverInterface.hpp
+    HEADERS AckDriver.hpp Driver.hpp ModemParser.hpp ModemDriverTypes.hpp DriverInterface.hpp AckDriverStats.hpp
     DEPS_PKGCONFIG base-types iodrivers_base)
 
 
