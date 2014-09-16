@@ -19,6 +19,7 @@ namespace modemdriver
             size_t send_last_second;
             bool last_send_sequenz_number;
             bool last_recv_sequenz_number;
+            bool current_sending;
             std::vector<uint8_t> last_packet;
             std::vector<uint8_t> _internal_buffer_;
             base::Time last_send;

@@ -23,6 +23,8 @@ namespace modemdriver
             boost::circular_buffer<uint8_t> payload_buffer;
             DriverInternalState state;
             boost::circular_buffer<uint8_t>  received_data;
+            //Current Sending?
+            bool sending;
 
             size_t acked_data_packets;
             size_t acked_protocol_packets;
@@ -40,6 +42,7 @@ namespace modemdriver
             bool hasReceivedData();
             void requestRange() const;
             AckDriverStats getDriverStats();
+            bool isSending() const;
     };
 }
 #endif 

@@ -14,6 +14,7 @@ AckDriver::AckDriver()
     send_retries = 0;
     last_received_ack_bit = 0;
     last_send_ack_bit = 0;
+    sending = false;
 
     acked_data_packets = 0;
     acked_protocol_packets = 0;
@@ -95,6 +96,7 @@ size_t AckDriver::process(){
                 Parser::packData(pending_message);
                 state = PENDING_ACK_DATA;
                 send_retries = 0;
+                sending = true;
             }
             break;
         case PENDING_ACK_DATA:
@@ -131,10 +133,12 @@ size_t AckDriver::process(){
             pending_message.resize(1);
             uint8_t payload = 0;
             if (!payload_buffer.empty()){
+                sending = true;
                 state = PENDING_ACK_DATA;
                 payload = payload_buffer[0];
                 payload_buffer.pop_front();
             } else {
+                sending = false;
                 state = PENDING_ACK_PROTOCOL;
             }
             if (!last_send_ack_bit){
@@ -155,6 +159,10 @@ size_t AckDriver::process(){
 void AckDriver::requestRange() const{
     assert(driver);
     driver->requestRange();
+}
+
+bool AckDriver::isSending() const{
+    return sending;
 }
 
 AckDriverStats AckDriver::getDriverStats(){
